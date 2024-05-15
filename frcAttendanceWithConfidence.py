@@ -72,7 +72,7 @@ while True:
         if(process_this_frame):
             # Initialize name and confidence score
             name = "Unknown"
-            confidence_score = 0
+            confidenceScore = 0
             
             # Compare the face encoding with known face encodings
             matches = face_recognition.compare_faces(knownFaceCode, face_encoding)
@@ -83,23 +83,29 @@ while True:
             if matches[best_match_index]:
                 name = knownFaceNames[best_match_index]
                 # Calculate the confidence score
-                confidence_score = 1 - face_distances[best_match_index]
+                confidenceScore = 1 - face_distances[best_match_index]
 
-            confidence_score *= 100
+            confidenceScore *= 100
 
             # Print name and confidence scorex`x`
-            print(f"Name: {name}, Confidence Score: {confidence_score}")
+            print(f"Name: {name}, Confidence Score: {confidenceScore}")
 
-            if confidence_score > 61 and name not in detectedNames:
-                # Write name and current date to text file
-                with open("detectedNames.txt", "a") as file:
-                    file.write(f"{name} - {datetime.datetime.now()}\n")
-                # Add name to detected names set
-                detectedNames.add(name)
+            currentTime = datetime.time.now()
+
+            if currentTime >= datetime.time(15, 35) and currentTime <= datetime.time(22, 0):
+                if confidenceScore > 61 and name not in detectedNames:
+                    # Write name and current date to text file
+                    with open("detectedNames.txt", "a") as file:
+                        file.write(f"{name} - {datetime.datetime.now()}\n")
+                    # Add name to detected names set
+                    detectedNames.add(name)
+            
+            if currentTime >= datetime.time(0, 0) and currentTime <= (7, 0):
+                detectedNames.clear()
 
             # Draw rectangle around the face and display name
             cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
-            cv2.putText(frame, f"{name} ({confidence_score:.2f})", (left + 6, bottom - 6), cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255), 1)
+            cv2.putText(frame, f"{name} ({confidenceScore:.2f})", (left + 6, bottom - 6), cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255), 1)
     
     process_this_frame = not process_this_frame
 
