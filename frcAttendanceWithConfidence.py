@@ -2,6 +2,7 @@ import face_recognition
 import cv2
 import numpy as np
 import datetime
+import socket
 
 # Get a reference to webcam #0 (the default one)
 cap = cv2.VideoCapture(0)
@@ -31,7 +32,14 @@ mollyChenFaceCode = face_recognition.face_encodings(mollyChenImage)[0]
 stephenPengImage = face_recognition.load_image_file(r"C:\Users\27GracieF\Documents\GitHub\frc-attendance\practicePhotos\stephenpeng.png")
 stephenPengFaceCode = face_recognition.face_encodings(stephenPengImage)[0]
 
+drBayImage = face_recognition.load_image_file(r"C:\Users\27GracieF\Documents\GitHub\frc-attendance\practicePhotos\drbay.jpg")
+drBayFaceCode = face_recognition.face_encodings(drBayImage)[0]
 
+mrFagenImage = face_recognition.load_image_file(r"C:\Users\27GracieF\Documents\GitHub\frc-attendance\practicePhotos\stephenpeng.png")
+mrFagenFaceCode = face_recognition.face_encodings(mrFagenImage)[0]
+
+mrPatelImage = face_recognition.load_image_file(r"C:\Users\27GracieF\Documents\GitHub\frc-attendance\practicePhotos\stephenpeng.png")
+mrPatelFaceCode = face_recognition.face_encodings(mrPatelImage)[0]
 
 # Create arrays of known face encodings and their names
 knownFaceCode = [
@@ -42,7 +50,10 @@ knownFaceCode = [
     leannKanFaceCode,
     maxChengFaceCode,
     mollyChenFaceCode,
-    stephenPengFaceCode
+    stephenPengFaceCode,
+    drBayFaceCode,
+    mrFagenFaceCode,
+    mrPatelFaceCode
 ]
 knownFaceNames = [
     "Caden Wu",
@@ -52,10 +63,25 @@ knownFaceNames = [
     "Leann Kan",
     "Max Cheng ",
     "Molly Chen",
-    "Stephen Peng"
+    "Stephen Peng",
+    "Dr. Bay",
+    "Mr. Fagen",
+    "Mr. Patel"
 ]
 
 cap = cv2.VideoCapture(0)
+
+print("[INFO] Creating Server...")
+
+# Create a socket object
+s = socket.socket()
+
+# Set up the ESP32-CAM connection
+esp32_cam_ip = "192.168.1.100"  # Replace with your ESP32-CAM's IP address
+esp32_cam_port = 8080
+s.connect((esp32_cam_ip, esp32_cam_port))
+
+print("[INFO] Server Created.")
 
 detectedNames = set()
 
@@ -86,6 +112,10 @@ while True:
                 confidence_score = 1 - face_distances[best_match_index]
 
             confidence_score *= 100
+
+            # Send the detection result to the ESP32-CAM
+            message = f"*{name}'s face has been detected at {datetime.datetime.now()}*"
+            s.send(message.encode())
 
             # Print name and confidence scorex`x`
             print(f"Name: {name}, Confidence Score: {confidence_score}")
